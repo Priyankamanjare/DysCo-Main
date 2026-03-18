@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const generateToken = require('../utils/generateToken');
 const mongoose = require('mongoose');
 
-const registerUser = async(req, res) => {
+const registerUser = async (req, res) => {
   try {
     // Check if database is connected (readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting)
     if (mongoose.connection.readyState === 0) {
@@ -12,7 +12,7 @@ const registerUser = async(req, res) => {
         error: 'Database not connected'
       });
     }
-    
+
     // If connecting, wait a bit for connection to establish
     if (mongoose.connection.readyState === 2) {
       // Wait for connection (max 5 seconds)
@@ -32,7 +32,7 @@ const registerUser = async(req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'All fields are required.'
       });
     }
@@ -45,7 +45,7 @@ const registerUser = async(req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    if(!hashedPassword) {
+    if (!hashedPassword) {
       return res.status(500).json({
         message: 'Password could not be hashed'
       })
@@ -71,7 +71,7 @@ const registerUser = async(req, res) => {
   }
 };
 
-const loginUser = async(req, res) => {
+const loginUser = async (req, res) => {
   try {
     // Check if database is connected (readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting)
     if (mongoose.connection.readyState === 0) {
@@ -80,7 +80,7 @@ const loginUser = async(req, res) => {
         error: 'Database not connected'
       });
     }
-    
+
     // If connecting, wait a bit for connection to establish
     if (mongoose.connection.readyState === 2) {
       // Wait for connection (max 5 seconds)
@@ -99,7 +99,7 @@ const loginUser = async(req, res) => {
 
     const { email, password } = req.body;
 
-    if(!email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: 'All fields are required'
       })
@@ -107,20 +107,20 @@ const loginUser = async(req, res) => {
 
     const user = await User.findOne({ email: email });
     if (!user) {
-      return res.status(404).json({ 
-        message: 'User not found.' 
+      return res.status(404).json({
+        message: 'User not found.'
       });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        message: 'Password does not match.' 
+      return res.status(401).json({
+        message: 'Password does not match.'
       });
     }
 
     const token = generateToken(user._id);
-    if(!token) {
+    if (!token) {
       return res.status(500).json({
         message: 'Error creating token'
       })
@@ -145,7 +145,8 @@ const loginUser = async(req, res) => {
 const getUserProfile = async (req, res) => {
   try {
     // req.user comes from your authMiddleware
-    const user = await User.findById(req.user).select("-password");
+    // req.user comes from your authMiddleware
+    const user = await User.findById(req.user).select("-password").populate('progress.lessonId', 'title category difficulty');
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -163,8 +164,42 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+
+const updateUserProgress = async (req, res) => {
+  try {
+    const { lessonId, score } = req.body;
+    const userId = req.user;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const existingEntryIndex = user.progress.findIndex(p => p.lessonId.toString() === lessonId);
+
+    if (existingEntryIndex > -1) {
+      user.progress[existingEntryIndex].score = score;
+      user.progress[existingEntryIndex].completedAt = Date.now();
+    } else {
+      user.progress.push({ lessonId, score });
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Progress updated successfully",
+      progress: user.progress
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating progress", error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
+  updateUserProgress,
 };

@@ -8,10 +8,14 @@ import TextToSpeech from '../../components/TextToSpeech/TextToSpeech';
 import Summary from '../../components/Summary/Summary';
 import SpeechToText from '../../components/SpeechToText/SpeechToText';
 import FlashCards from '../../components/FlashCards/FlashCards';
+import Library from '../Library/Library';
+import LessonView from '../Library/LessonView';
+import Profile from '../Profile/Profile';
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const [activeComponent, setActiveComponent] = useState('notes');
+  const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -24,7 +28,18 @@ const Dashboard = () => {
 
   const handleButtonClick = (componentName) => {
     setActiveComponent(componentName);
+    if (componentName !== 'library') {
+      setSelectedLessonId(null);
+    }
   }
+
+  const handleLessonSelect = (lessonId) => {
+    setSelectedLessonId(lessonId);
+  };
+
+  const handleBackToLibrary = () => {
+    setSelectedLessonId(null);
+  };
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });
@@ -56,7 +71,7 @@ const Dashboard = () => {
             </>
           ) : (
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 style={{
                   padding: '8px 16px',
@@ -71,7 +86,7 @@ const Dashboard = () => {
               >
                 Login
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/register')}
                 style={{
                   padding: '8px 16px',
@@ -116,7 +131,7 @@ const Dashboard = () => {
               You need to log in or create an account to use this feature.
             </p>
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 style={{
                   padding: '12px 30px',
@@ -131,7 +146,7 @@ const Dashboard = () => {
               >
                 Login
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/register')}
                 style={{
                   padding: '12px 30px',
@@ -146,7 +161,7 @@ const Dashboard = () => {
               >
                 Register
               </button>
-              <button 
+              <button
                 onClick={() => setShowLoginModal(false)}
                 style={{
                   padding: '12px 30px',
@@ -174,6 +189,14 @@ const Dashboard = () => {
           {activeComponent === 'summary' && <Summary />}
           {activeComponent === 'tts' && <TextToSpeech />}
           {activeComponent === 'cards' && <FlashCards />}
+          {activeComponent === 'library' && (
+            selectedLessonId ? (
+              <LessonView lessonId={selectedLessonId} onBack={handleBackToLibrary} />
+            ) : (
+              <Library onSelectLesson={handleLessonSelect} />
+            )
+          )}
+          {activeComponent === 'profile' && <Profile />}
         </div>
       </div>
     </div>

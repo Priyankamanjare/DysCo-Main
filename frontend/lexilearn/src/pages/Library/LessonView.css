@@ -1,0 +1,182 @@
+.lesson-view-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #495057;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.lesson-header h1 {
+    font-size: 2.5rem;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.lesson-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.badge.easy {
+    background: #d3f9d8;
+    color: #2b8a3e;
+}
+
+.badge.medium {
+    background: #fff3bf;
+    color: #f08c00;
+}
+
+.badge.hard {
+    background: #ffe3e3;
+    color: #e03131;
+}
+
+.lesson-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.speak-btn {
+    background: #4dabf7;
+    color: white;
+}
+
+.speak-btn:hover {
+    background: #339af0;
+}
+
+.speak-btn.playing {
+    background: #fa5252;
+}
+
+.summary-btn {
+    background: #20c997;
+    color: white;
+}
+
+.summary-btn:hover {
+    background: #12b886;
+}
+
+.quiz-btn {
+    background: #7950f2;
+    color: white;
+}
+
+.quiz-btn:hover {
+    background: #5f3dc4;
+}
+
+.summary-box {
+    background: #f8f9fa;
+    border-left: 4px solid #20c997;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+}
+
+.lesson-body {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #343a40;
+}
+
+/* Quiz Overlay */
+.quiz-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.quiz-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.close-quiz {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.options-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.option-btn {
+    padding: 1rem;
+    background: #f1f3f5;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.option-btn:hover {
+    background: #e9ecef;
+}
+
+.score-section {
+    text-align: center;
+}
+
+.score-section button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #4dabf7;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
