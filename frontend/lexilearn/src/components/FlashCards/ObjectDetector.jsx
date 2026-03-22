@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import * as tf from '@tensorflow/tfjs';
-import * as cocossd from"@tensorflow-models/coco-ssd";
+import { loadYoloModel, detectYolo } from './yoloUtils';
 import Webcam from "react-webcam";
 import toast from 'react-hot-toast';
 import axios from "axios";
@@ -13,33 +13,48 @@ const ObjectDetector = () => {
   const [isDetecting, setIsDetecting] = useState(false);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
-  const detectionIntervalRef = useRef(null);
+  const detectWorkerRef = useRef(null);
+  const loopActiveRef = useRef(false);
 
   const { user } = useAuthContext();
 
   useEffect(() => {
     return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
+      stopDetection();
     };
   }, []);
 
   const stopDetection = () => {
     setIsDetecting(false);
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
+    loopActiveRef.current = false;
+    if (detectWorkerRef.current) {
+      clearTimeout(detectWorkerRef.current);
+    }
+    // optionally clear canvas after stopping
+    if(canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
   };
 
   const startDetection = async () => {
     setIsDetecting(true);
-    await tf.setBackend('webgl');
-    const net = await cocossd.load();
-    detectionIntervalRef.current = setInterval(() => {
-      detect(net);
-    }, 10);
+    loopActiveRef.current = true;
+    toast.success("Loading YOLOv8 model, please wait...");
+    const net = await loadYoloModel();
+    toast.dismiss();
+    toast.success("Model loaded!");
+    runDetectionLoop(net);
   }
+
+  const runDetectionLoop = async (net) => {
+    if(!loopActiveRef.current) return;
+    await detect(net);
+    if(!loopActiveRef.current) return;
+    detectWorkerRef.current = setTimeout(() => {
+      runDetectionLoop(net);
+    }, 150); // running at ~6.6 FPS to prevent browser freezing with large tensor maths
+  };
 
   const detect = async (net) => {
     if (
@@ -57,9 +72,10 @@ const ObjectDetector = () => {
       canvasRef.current.width = videoWidth;
       canvasRef.current.height = videoHeight;
 
-      const obj = await net.detect(video);
+      const obj = await detectYolo(net, video);
 
       const ctx = canvasRef.current.getContext("2d");
+      ctx.clearRect(0, 0, videoWidth, videoHeight); // wipe previous rects
       drawRect(obj, ctx);
     }
   };
@@ -77,7 +93,7 @@ const ObjectDetector = () => {
 
         ctx.beginPath();   
         ctx.fillStyle = color
-        ctx.fillText(text, x, y);
+        ctx.fillText(text, x, y > 20 ? y - 5 : y + 20); // Better text placement
         ctx.rect(x, y, width, height); 
         ctx.stroke();
     });

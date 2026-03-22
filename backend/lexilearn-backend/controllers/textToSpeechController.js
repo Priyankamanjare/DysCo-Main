@@ -9,18 +9,14 @@ const textToSpeech = async (req, res) => {
     }
 
     const response = await axios.post(
-      'https://api.elevenlabs.io/v1/text-to-speech/ZT9u07TYPVl83ejeLakq', // Replace with your voice ID
+      'https://api.deepgram.com/v1/speak?model=aura-asteria-en',
       {
-        text: text,
-        voice_settings: {
-          stability: 0.75,
-          similarity_boost: 0.75
-        }
+        text: text
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'xi-api-key': process.env.TTS_KEY
+          'Authorization': `Token ${process.env.DEEPGRAM_API_KEY}`
         },
         responseType: 'arraybuffer'
       }
@@ -37,9 +33,22 @@ const textToSpeech = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    const status = error.response ? error.response.status : 500;
+    let errorMsg = error.message;
+    
+    if (error.response && error.response.data) {
+      if (Buffer.isBuffer(error.response.data)) {
+        errorMsg = error.response.data.toString('utf-8');
+      } else if (error.response.data instanceof ArrayBuffer) {
+        errorMsg = Buffer.from(error.response.data).toString('utf-8');
+      } else {
+        errorMsg = JSON.stringify(error.response.data);
+      }
+    }
+
+    res.status(status).json({
       message: 'Error converting text to speech',
-      error: error.message
+      error: errorMsg
     });
   }
 };
